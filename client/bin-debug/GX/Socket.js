@@ -74,7 +74,7 @@ var GX;
          * @language zh_CN
          */
         WebSocket.connect = function () {
-            this.socket.connect("127.0.0.1", 3000);
+            this.socket.connect("127.0.0.1", 8181);
         };
         WebSocket.tcpSend = function (data) {
             if (data == null)

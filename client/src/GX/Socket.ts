@@ -69,7 +69,7 @@ module GX {
          * @language zh_CN
          */
         public static connect() {
-            this.socket.connect("127.0.0.1",3000);
+            this.socket.connect("127.0.0.1",8181);
         }
         public static tcpSend(data: any) {
             if (data == null)
