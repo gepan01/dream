@@ -36,17 +36,17 @@ class Main extends eui.UILayer {
     protected createChildren(): void {
         super.createChildren();
 
-        egret.lifecycle.addLifecycleListener((context) => {
-            // custom lifecycle plugin
-        })
+        // egret.lifecycle.addLifecycleListener((context) => {
+        //     // custom lifecycle plugin
+        // })
 
-        egret.lifecycle.onPause = () => {
-            egret.ticker.pause();
-        }
+        // egret.lifecycle.onPause = () => {
+        //     egret.ticker.pause();
+        // }
 
-        egret.lifecycle.onResume = () => {
-            egret.ticker.resume();
-        }
+        // egret.lifecycle.onResume = () => {
+        //     egret.ticker.resume();
+        // }
 
         //inject the custom material parser
         //注入自定义的素材解析器
@@ -142,17 +142,7 @@ class Main extends eui.UILayer {
      * Create scene interface
      */
     protected startCreateScene(): void {
-        // var socket=io.connect("http://127.0.0.1:1337/");
-        //  socket.on("news", function (data) {
-        //      console.log(data.hello);
-        //      socket.emit("my other event",{my:"data"});
-        //  });
-        // var socket = io.connect('http://127.0.0.1:3000/');
-
-        // socket.on('connection', function (socket) {
-        //     alert(222)
-        // });
-        GX.WebSocket.connect();
+        GX.NetManager.connect("127.0.0.1",8181);
         
         let sky = this.createBitmapByName("bg_jpg");
         this.addChild(sky);
@@ -260,10 +250,8 @@ class Main extends eui.UILayer {
      * Click the button
      */
     private onButtonClick(e: egret.TouchEvent) {
-        let panel = new eui.Panel();
-        panel.title = "Title";
-        panel.horizontalCenter = 0;
-        panel.verticalCenter = 0;
-        this.addChild(panel);
+        let a = new Cmd.GetPracticeGameInfoRoomCmd_C();
+        a.gameId = 1001;
+        GX.NetManager.tcpSend(a);
     }
 }

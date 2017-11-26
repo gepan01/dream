@@ -1,6 +1,29 @@
 // TypeScript file
 module GX {
-    export class Socket {
+    export class MessageCodec {
+        public static Encode(value: uniLib.IType): string {
+            if (value == null)
+                return null;
+            var json = JSON.stringify(value);
+            var type = value.GetType();
+            if (json === "" || json === "{}")
+                return type;
+            else
+                return type + ":" + json;
+        }
+
+        public static Decode(value: any): uniLib.IType {
+            if (typeof (value) != "string" || value === "")
+                return null;
+            var index = value.indexOf(':');
+            var type = index != -1 ? value.substr(0, index) : value;
+            var json = index != -1 ? value.substr(index + 1) : null;
+            var obj = json != null ? JSON.parse(json) : {};
+            obj["GetType"] = function () { return type; }
+            return obj;
+        }
+    }
+    export class WebSocket {
         private socket: egret.WebSocket;
         constructor() {
             this.init();
@@ -23,59 +46,55 @@ module GX {
             this.socket.connect(host, port);
         }
         public send(value: string) {
-            var byte: egret.ByteArray = new egret.ByteArray();
-            byte.writeUTF(value);
-            byte.writeBoolean(false);
-            byte.writeInt(123);
-            byte.position = 0;
-            this.socket.writeBytes(byte, 0, byte.bytesAvailable);
+            this.socket.writeUTF(value);
             this.socket.flush();
+            console.log("[WS SEND] " + value);
         }
         private onReceiveMessage() {
-            var byte: egret.ByteArray = new egret.ByteArray();
-            this.socket.readBytes(byte);
-            var msg: string = byte.readUTF();
-            var boo: boolean = byte.readBoolean();
-            var num: number = byte.readInt();
+            var msg = this.socket.readUTF();
+            var cmd = MessageCodec.Decode(msg);
+            if (cmd == null) {
+                console.error("[WS ERROR DECODE] " + msg);
+                return false;
+            }
 
+            console.log("[WS RECV] " + msg);
+            // 得到消息响应函数
+            var type = cmd.GetType();
+            // Cmd.UserGetAccountRoleList -> Cmd. On UserGetAccountRoleList
+            var f = uniLib.getDefinitionByName(type.replace(/\.(\w+)$/, "\.On$1"))
+            if (f == null) {
+                console.warn("[WS ERROR DISPATCH] " + msg);
+                return false;
+            }
+            // 消息响应
+            try {
+                f(cmd);
+                return true;
+            }
+            catch (e) {
+                console.error("[WS RUN ERROR]" + e.toString() + "\n" + msg);
+                return false;
+            }
         }
         private onSocketOpen() {
-            alert(222)
-
+            console.error("socket open")
         }
         private onSocketClose() {
-            alert(333)
+            console.error("socket close")
         }
         private onSocketError() {
-            alert(444)
+            console.error("socket Error")
         }
     }
-    export class WebSocket {
-        public static socket = new Socket();
-        /**
-         * Connect the socket to the specified host and port number
-         * @param host Name or IP address of the host to be connected
-         * @param port Port number to be connected
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 将套接字连接到指定的主机和端口
-         * @param host 要连接到的主机的名称或 IP 地址
-         * @param port 要连接到的端口号
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        public static connect() {
-            this.socket.connect("127.0.0.1",8181);
+    export class NetManager {
+        public static socket = new WebSocket();
+        public static connect(host: string, port: number) {
+            this.socket.connect(host, port);
         }
         public static tcpSend(data: any) {
-            if (data == null)
-                return;
-            let value = JSON.stringify(data);
-            this.socket.send(value)
+            var msg = MessageCodec.Encode(data);
+            this.socket.send(msg)
         }
     }
 }
