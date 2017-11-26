@@ -47,13 +47,9 @@
       "name": "promise",
       "path": "./promise"
     },
-    {
-		    "name": "md5",
-		    "path": "../egret-game-library/md5/libsrc"
-		},
-    {
-		    "name": "socket.io",
-		    "path": "../egret-game-library/socket.io/libsrc"
+		{
+			"name": "uniLib",
+			"path": "../libsrc/uniLib"
 		}
   ]
 }
